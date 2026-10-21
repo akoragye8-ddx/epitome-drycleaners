@@ -180,6 +180,55 @@
     100%{ transform:rotate(0); }
   }
 
+  /* HERO REFRESH: soft color glow, pill badge, rounded buttons, trust row, glass chips */
+  .hero{
+    background:
+      radial-gradient(55% 45% at 88% 12%, rgba(52,82,208,0.13), transparent 70%),
+      radial-gradient(45% 40% at 4% 92%, rgba(255,183,65,0.20), transparent 70%),
+      var(--cream);
+  }
+  .hero-pill{
+    display:inline-flex; align-items:center; gap:10px; margin-bottom:22px;
+    padding:8px 16px 8px 12px; border-radius:999px;
+    background:rgba(255,255,255,0.75); border:1px solid var(--line);
+    font-size:13.5px; font-weight:600; color:var(--navy);
+    box-shadow:0 6px 18px rgba(16,27,61,0.08); backdrop-filter:blur(6px);
+    transition:transform .2s ease, box-shadow .2s ease;
+  }
+  .hero-pill:hover{ transform:translateY(-2px); box-shadow:0 10px 24px rgba(16,27,61,0.14); }
+  .hero-pill .dot{ width:8px; height:8px; border-radius:50%; background:#1F9D55; box-shadow:0 0 0 4px rgba(31,157,85,0.18); }
+  .hero-pill .arrow{ color:var(--blue); font-weight:800; }
+  .hero-actions .btn{ border-radius:999px; padding:16px 30px; }
+  .hero-actions .btn-primary{ box-shadow:0 12px 28px rgba(52,82,208,0.32); }
+  .hero-actions .btn-outline{ background:rgba(255,255,255,0.6); }
+  .hero-actions .btn-outline:hover{ background:var(--navy); }
+  .hero-trust{ display:flex; flex-wrap:wrap; gap:10px 22px; margin-top:30px; padding-top:22px; border-top:1px solid var(--line); max-width:520px; }
+  .hero-trust li{ display:flex; align-items:center; gap:8px; font-size:14px; font-weight:600; color:var(--navy); }
+  .hero-trust svg{ width:18px; height:18px; flex:none; fill:none; stroke:var(--blue); stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round; }
+  .hero-visual{ border-radius:32px; box-shadow:0 0 0 8px rgba(255,255,255,0.7), 0 40px 80px rgba(16,27,61,0.22); }
+  .hero-chips{ position:absolute; left:16px; right:16px; bottom:16px; z-index:3; display:flex; flex-direction:column; align-items:flex-start; gap:8px; pointer-events:none; }
+  .hero-chip{
+    display:inline-flex; align-items:center; gap:8px; padding:9px 14px; border-radius:14px;
+    background:rgba(255,255,255,0.14); border:1px solid rgba(255,255,255,0.28);
+    backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+    color:#fff; font-size:13px; font-weight:600; letter-spacing:0.01em;
+  }
+  .hero-chip b{ font-weight:800; color:#FFD27A; }
+
+  /* OFFER BANNER */
+  .promo{ padding:30px 0; background:var(--navy); color:var(--white); }
+  .promo-inner{ display:flex; align-items:center; justify-content:space-between; gap:28px; flex-wrap:wrap; }
+  .promo-copy{ max-width:640px; }
+  .promo-tag{ display:inline-block; margin-bottom:8px; padding:4px 12px; border-radius:999px; background:#FFB741; color:#1A1405; font-size:12px; font-weight:800; letter-spacing:0.06em; text-transform:uppercase; }
+  .promo-copy h2{ color:var(--white); font-size:26px; font-weight:800; line-height:1.2; margin-bottom:6px; }
+  .promo-copy p{ color:#C9D0E5; font-size:15px; }
+  .promo-actions{ display:flex; gap:12px; flex-wrap:wrap; }
+  .promo .btn{ border-radius:999px; }
+  .promo .btn-wa{ background:var(--whatsapp); color:var(--white); }
+  .promo .btn-wa:hover{ background:var(--whatsapp-deep); }
+  .promo .btn-ghost{ background:transparent; color:var(--white); border-color:rgba(255,255,255,0.45); }
+  .promo .btn-ghost:hover{ background:var(--white); color:var(--navy); }
+
   /* SECTION SHARED */
   section{ padding:96px 0; }
   .section-head{ max-width:640px; margin-bottom:40px; }
@@ -330,6 +379,23 @@
   }
   @keyframes progress-fill{ from{ width:0; } }
 
+  /* STEP CARDS: one solid color per card */
+  .step{ background:var(--card-bg); color:var(--card-fg); border-radius:22px; box-shadow:0 12px 30px color-mix(in srgb, var(--card-bg) 40%, transparent); }
+  .step.highlight, .step:hover{ box-shadow:0 0 0 2px var(--card-fg), 0 22px 44px color-mix(in srgb, var(--card-bg) 50%, transparent); }
+  .step-orange{ --card-bg:#FFB741; --card-fg:#1A1405; --card-track:rgba(26,20,5,0.20); --card-foot:rgba(26,20,5,0.12); }
+  .step-green{  --card-bg:#01C3A8; --card-fg:#04201C; --card-track:rgba(4,32,28,0.22);  --card-foot:rgba(4,32,28,0.12); }
+  .step-blue{   --card-bg:#1D5FD6; --card-fg:#FFFFFF; --card-track:rgba(255,255,255,0.30); --card-foot:rgba(0,0,0,0.20); }
+  .step-red{    --card-bg:#C8402B; --card-fg:#FFFFFF; --card-track:rgba(255,255,255,0.30); --card-foot:rgba(0,0,0,0.20); }
+  .step-label, .step-icon, .step h3, .step p, .step-progress{ color:var(--card-fg); }
+  .step-label{ opacity:0.85; }
+  .step-progress-bar{ background:var(--card-track); }
+  .step-progress-bar::after{ background:var(--card-fg); }
+  .step-footer{ background:var(--card-foot); }
+  .step-thumbs img, .step-add{ border-color:var(--card-bg); }
+  .step-add{ background:var(--card-foot); color:var(--card-fg); }
+  .step-add:hover{ background:var(--card-fg); color:var(--card-bg); }
+  .step-time{ background:var(--card-foot); color:var(--card-fg); }
+
   /* PRICING */
   .pricing-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:28px; align-items:stretch; }
   .plan{
@@ -444,6 +510,10 @@
     .hero-wordmark{ margin-bottom:20px; }
     .hero-wordmark svg{ width:min(80vw, 340px); }
     .hero-copy p{ font-size:17px; margin-bottom:24px; }
+    .hero-pill{ margin-bottom:16px; font-size:13px; }
+    .hero-trust{ display:none; }
+    .hero-visual{ border-radius:24px; box-shadow:0 0 0 6px rgba(255,255,255,0.7), 0 24px 48px rgba(16,27,61,0.2); }
+    .hero-chips{ left:12px; right:12px; bottom:12px; }
     .services-grid, .pricing-grid, .loc-grid{ grid-template-columns:1fr; }
     .booking-grid{ grid-template-columns:1fr; gap:36px; }
     .form-grid{ grid-template-columns:1fr; }
@@ -541,8 +611,13 @@
           <div class="suit-shade"></div>
         </div>
       </div>
+      <div class="hero-chips">
+        <span class="hero-chip"><b>48h</b> turnaround</span>
+        <span class="hero-chip">Eco-friendly solvents</span>
+      </div>
     </div>
     <div class="hero-copy">
+      <a href="#offer" class="hero-pill reveal"><span class="dot" aria-hidden="true"></span>Household plan: 250,000 UGX/month<span class="arrow" aria-hidden="true">&rarr;</span></a>
       <div class="hero-wordmark reveal">
         <h1 class="visually-hidden">Epitome Dry Cleaners</h1>
         <svg viewBox="12 14 286 142" aria-hidden="true" focusable="false">
@@ -571,6 +646,26 @@
         <a href="#book" class="btn btn-primary">Schedule a pickup</a>
         <a href="#pricing" class="btn btn-outline">See pricing</a>
       </div>
+      <ul class="hero-trust reveal">
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>48-hour turnaround</li>
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Pickup &amp; delivery</li>
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Eco-friendly solvents</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="promo" id="offer" aria-label="Current offer">
+  <div class="wrap promo-inner">
+    <div class="promo-copy">
+      <span class="promo-tag">Household plan</span>
+      <h2>Laundry sorted for the month: 250,000 UGX</h2>
+      <p>Up to 20kg wash &amp; fold weekly plus 10 dry-clean items a month, with pickup and delivery.</p>
+      <!-- TODO: add the "See our offer on Google" link here once the Business Profile offer post is live -->
+    </div>
+    <div class="promo-actions">
+      <a href="https://wa.me/256789015327?text=Hi%20Epitome%2C%20I%27d%20like%20to%20subscribe%20to%20the%20Household%20plan." target="_blank" rel="noopener" class="btn btn-wa">Subscribe on WhatsApp</a>
+      <a href="#pricing" class="btn btn-ghost">See plan details</a>
     </div>
   </div>
 </section>
