@@ -209,11 +209,24 @@
   .hero-chips{ position:absolute; left:16px; right:16px; bottom:16px; z-index:3; display:flex; flex-direction:column; align-items:flex-start; gap:8px; pointer-events:none; }
   .hero-chip{
     display:inline-flex; align-items:center; gap:8px; padding:9px 14px; border-radius:14px;
-    background:rgba(255,255,255,0.14); border:1px solid rgba(255,255,255,0.28);
+    background:rgba(10,16,38,0.58); border:1px solid rgba(255,255,255,0.3);
     backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
     color:#fff; font-size:13px; font-weight:600; letter-spacing:0.01em;
   }
   .hero-chip b{ font-weight:800; color:#FFD27A; }
+  /* HERO CAROUSEL: suit, shirt, trousers share one hanger; each change blur-fades and swings it */
+  .garment{ position:absolute; inset:0; opacity:0; filter:blur(10px); pointer-events:none; transition:opacity .55s ease, filter .55s ease; }
+  .garment.is-active{ opacity:1; filter:none; }
+  .hero-visual{ transition:background-color .55s ease; }
+  .suit-turn.show-back .garment.single .suit-front{ opacity:1; transform:scaleX(-1); }
+  .hero-carousel-ui{ position:absolute; top:16px; left:16px; right:16px; z-index:3; display:flex; justify-content:space-between; align-items:center; }
+  .hero-garment-name{ text-transform:uppercase; letter-spacing:.14em; font-size:11px; }
+  .hero-dots{ display:flex; gap:10px; padding:8px 12px; border-radius:999px; background:rgba(10,16,38,0.58); border:1px solid rgba(255,255,255,0.3); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); }
+  .hero-dot{ position:relative; width:10px; height:10px; padding:0; border-radius:50%; border:1.5px solid rgba(255,255,255,0.8); background:transparent; cursor:pointer; transition:background .3s, transform .3s; }
+  .hero-dot::after{ content:""; position:absolute; inset:-9px; }
+  .hero-dot.is-active{ background:#fff; transform:scale(1.15); }
+  .hero-dot:focus-visible{ outline:2px solid #FFD27A; outline-offset:3px; }
+  @media (prefers-reduced-motion:reduce){ .garment{ transition:none; filter:none; } }
   /* Short desktop windows: the stage is a fixed height with overflow hidden, so trim the
      stack instead of letting the trust row and buttons get clipped. */
   @media (min-width:901px) and (max-height:820px){
@@ -525,6 +538,7 @@
     .hero-trust{ display:none; }
     .hero-visual{ border-radius:24px; box-shadow:0 0 0 6px rgba(255,255,255,0.7), 0 24px 48px rgba(16,27,61,0.2); }
     .hero-chips{ left:12px; right:12px; bottom:12px; }
+    .hero-carousel-ui{ top:12px; left:12px; right:12px; }
     .services-grid, .pricing-grid, .loc-grid{ grid-template-columns:1fr; }
     .booking-grid{ grid-template-columns:1fr; gap:36px; }
     .form-grid{ grid-template-columns:1fr; }
@@ -614,12 +628,28 @@
 <main id="main">
 <section class="hero">
   <div class="hero-stage">
-    <div class="hero-visual" aria-hidden="true">
+    <div class="hero-visual" role="group" aria-roledescription="carousel" aria-label="Garments we care for">
       <div class="hero-hanger">
         <div class="suit-turn">
-          <img class="suit-front" src="images/hero-suit.jpg" alt="" width="800" height="1200" fetchpriority="high">
-          <img class="suit-back" src="images/hero-suit-back.jpg" alt="" width="800" height="1200">
+          <div class="garment is-active" data-name="Suit" data-bg="#010908">
+            <img class="suit-front" src="images/hero-suit.jpg" alt="Suit on a wooden hanger" width="800" height="1200" fetchpriority="high">
+            <img class="suit-back" src="images/hero-suit-back.jpg" alt="" width="800" height="1200">
+          </div>
+          <div class="garment single" data-name="Shirt" data-bg="#503f30">
+            <img class="suit-front" src="images/hero-shirt.jpg" alt="Shirts hanging on a rack" width="736" height="1104" loading="lazy">
+          </div>
+          <div class="garment single" data-name="Trousers" data-bg="#e4e4e0">
+            <img class="suit-front" src="images/hero-trousers.jpg" alt="Trousers on a wooden hanger" width="736" height="1190" loading="lazy">
+          </div>
           <div class="suit-shade"></div>
+        </div>
+      </div>
+      <div class="hero-carousel-ui">
+        <span class="hero-chip hero-garment-name" id="hero-garment-name" aria-live="polite">Suit</span>
+        <div class="hero-dots">
+          <button type="button" class="hero-dot is-active" aria-label="Show suit" aria-current="true"></button>
+          <button type="button" class="hero-dot" aria-label="Show shirt"></button>
+          <button type="button" class="hero-dot" aria-label="Show trousers"></button>
         </div>
       </div>
       <div class="hero-chips">
@@ -1246,6 +1276,64 @@ if (!reduceMotion) {
   document.querySelector('.hero-visual').addEventListener('mouseenter', function() {
     if (!hanger.classList.contains('swinging')) swing();
   });
+})();
+
+// Hero carousel: suit, shirt, trousers. Each change swings the hanger; advances every 6.5s,
+// pauses while the window is hovered or focused, and also responds to the dots, arrow keys and swipes.
+(function() {
+  var visual = document.querySelector('.hero-visual');
+  if (!visual) return;
+  var garments = visual.querySelectorAll('.garment');
+  var dots = visual.querySelectorAll('.hero-dot');
+  var label = document.getElementById('hero-garment-name');
+  var hanger = visual.querySelector('.hero-hanger');
+  if (garments.length < 2 || dots.length !== garments.length) return;
+  var current = 0, timer = null, paused = false, startX = null;
+
+  function show(i) {
+    i = (i + garments.length) % garments.length;
+    if (i === current) return;
+    garments[current].classList.remove('is-active');
+    dots[current].classList.remove('is-active');
+    dots[current].removeAttribute('aria-current');
+    garments[i].classList.add('is-active');
+    dots[i].classList.add('is-active');
+    dots[i].setAttribute('aria-current', 'true');
+    label.textContent = garments[i].getAttribute('data-name');
+    visual.style.setProperty('--hero-bg', garments[i].getAttribute('data-bg') || '#010908');
+    current = i;
+    if (!reduceMotion) {
+      hanger.classList.remove('swinging');
+      void hanger.offsetWidth;
+      hanger.classList.add('swinging');
+    }
+  }
+  function stop() { clearInterval(timer); timer = null; }
+  function start() {
+    if (reduceMotion || paused || document.hidden) return;
+    stop();
+    timer = setInterval(function() { show(current + 1); }, 6500);
+  }
+  dots.forEach(function(dot, i) {
+    dot.addEventListener('click', function() { show(i); start(); });
+  });
+  visual.addEventListener('mouseenter', function() { paused = true; stop(); });
+  visual.addEventListener('mouseleave', function() { paused = false; start(); });
+  visual.addEventListener('focusin', function() { paused = true; stop(); });
+  visual.addEventListener('focusout', function() { paused = false; start(); });
+  visual.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowLeft') { show(current - 1); start(); }
+    if (e.key === 'ArrowRight') { show(current + 1); start(); }
+  });
+  visual.addEventListener('touchstart', function(e) { startX = e.touches[0].clientX; }, { passive: true });
+  visual.addEventListener('touchend', function(e) {
+    if (startX === null) return;
+    var dx = e.changedTouches[0].clientX - startX;
+    startX = null;
+    if (Math.abs(dx) > 40) { show(current + (dx < 0 ? 1 : -1)); start(); }
+  }, { passive: true });
+  document.addEventListener('visibilitychange', function() { if (document.hidden) stop(); else start(); });
+  start();
 })();
 
 // Turn the suit on its hook while the hero is pinned: one full turn (front, back, front)
