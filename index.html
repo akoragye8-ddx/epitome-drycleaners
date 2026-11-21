@@ -140,7 +140,7 @@
   }
   .hero-stage{
     position:sticky; top:var(--header-h); height:var(--hero-h); overflow:hidden;
-    display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; column-gap:56px;
+    display:grid; grid-template-columns:minmax(0,clamp(380px,40vw,500px)) minmax(0,1fr); align-items:center; column-gap:48px;
     max-width:1240px; margin:0 auto; padding:40px 32px;
   }
   .hero-copy{ grid-column:1; grid-row:1; }
@@ -152,7 +152,7 @@
   .hero-visual{
     --hero-bg:#010908;
     position:relative; grid-column:2; grid-row:1; overflow:hidden;
-    height:min(calc(var(--hero-h) - 80px), 780px); aspect-ratio:2/3;
+    height:min(calc(var(--hero-h) - 80px), 780px);
     border-radius:24px; background:var(--hero-bg);
     box-shadow:0 30px 60px rgba(16,27,61,0.18);
   }
@@ -164,7 +164,7 @@
     -webkit-mask-image:linear-gradient(90deg, transparent 0, #000 16%, #000 84%, transparent 100%);
     mask-image:linear-gradient(90deg, transparent 0, #000 16%, #000 84%, transparent 100%);
   }
-  .suit-turn img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:53% 0; }
+  .suit-turn img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:var(--pos, 53% 0); }
   .suit-turn .suit-back, .suit-turn.show-back .suit-front{ opacity:0; }
   .suit-turn.show-back .suit-back{ opacity:1; }
   .suit-shade{ position:absolute; inset:0; background:var(--hero-bg); opacity:0; }
@@ -631,14 +631,14 @@
     <div class="hero-visual" role="group" aria-roledescription="carousel" aria-label="Garments we care for">
       <div class="hero-hanger">
         <div class="suit-turn">
-          <div class="garment is-active" data-name="Suit" data-bg="#010908">
+          <div class="garment is-active" data-name="Suit" data-bg="#010908" style="--pos:53% 22%">
             <img class="suit-front" src="images/hero-suit.jpg" alt="Suit on a wooden hanger" width="800" height="1200" fetchpriority="high">
             <img class="suit-back" src="images/hero-suit-back.jpg" alt="" width="800" height="1200">
           </div>
-          <div class="garment single" data-name="Shirt" data-bg="#503f30">
+          <div class="garment single" data-name="Shirt" data-bg="#503f30" style="--pos:53% 4%">
             <img class="suit-front" src="images/hero-shirt.jpg" alt="Shirts hanging on a rack" width="736" height="1104" loading="lazy">
           </div>
-          <div class="garment single" data-name="Trousers" data-bg="#e4e4e0">
+          <div class="garment single" data-name="Trousers" data-bg="#e4e4e0" style="--pos:50% 34%">
             <img class="suit-front" src="images/hero-trousers.jpg" alt="Trousers on a wooden hanger" width="736" height="1190" loading="lazy">
           </div>
           <div class="suit-shade"></div>
