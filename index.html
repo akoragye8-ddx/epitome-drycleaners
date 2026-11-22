@@ -127,14 +127,11 @@
   .menu-toggle[aria-expanded="true"] .icon-close{ display:block; }
 
   /* HERO
-     Cream like the rest of the page. The suit hangs in a dark display window on the
-     right; the photo's near-black background matches the window, so its edges vanish
-     while it swings and turns.
-     The section is taller than the stage (by --hero-pin); the stage sticks under the
-     header while that extra height scrolls past, and the suit turns during it. */
+     Cream like the rest of the page. On the right, one rack in a warm display window: the
+     garments rest edge-on, turn to face you on hover or tap, and open up on click (.rack-* rules). */
   .hero{
     --hero-h:max(560px, calc(100svh - var(--header-h)));
-    --hero-pin:70svh;
+    --hero-pin:0px;
     position:relative; padding:0; height:calc(var(--hero-h) + var(--hero-pin));
     background:var(--cream);
   }
@@ -150,7 +147,7 @@
   .hero-actions{ display:flex; gap:16px; flex-wrap:wrap; }
 
   .hero-visual{
-    --rail:13;
+    --rail:13; --edge:64deg; --ease:cubic-bezier(0.2, 0.8, 0.2, 1);
     position:relative; grid-column:2; grid-row:1; overflow:hidden; container-type:inline-size;
     aspect-ratio:5/4; max-height:calc(var(--hero-h) - 80px);
     border-radius:24px; background:#4a3a2f;
@@ -165,37 +162,73 @@
       repeating-linear-gradient(90deg, rgba(0,0,0,0.07) 0 2px, transparent 2px 6.2cqw),
       linear-gradient(180deg, #76604f 0%, #5b4739 60%, #43342b 100%);
   }
-  .suit-turn{ position:absolute; inset:0; transform-origin:50% 0; will-change:transform; }
+  .rack-scene{ --act:-1; --on:0; position:absolute; inset:0; }
+  .rack-brand{
+    position:absolute; top:3.2cqw; left:0; right:0; z-index:6; margin:0; text-align:center; pointer-events:none;
+    font-size:12px; font-weight:700; letter-spacing:0.28em; text-transform:uppercase; color:rgba(255,244,230,0.92);
+    text-shadow:0 1px 8px rgba(0,0,0,0.45);
+  }
   .rack-rail{
     position:absolute; left:2cqw; right:2cqw; top:calc(var(--rail) * 1cqw - 0.65cqw); height:1.3cqw; z-index:1;
     border-radius:1cqw; background:linear-gradient(#5b5754, #1c1a19 55%, #0e0d0d); box-shadow:0 0.6cqw 0.9cqw rgba(0,0,0,0.4);
+    transition:opacity .5s ease;
   }
   .rack-pole{
     position:absolute; top:calc(var(--rail) * 1cqw - 0.65cqw); bottom:0; width:1.3cqw; z-index:0;
-    border-radius:1cqw 1cqw 0 0; background:linear-gradient(90deg, #585451, #1a1918 60%, #0c0b0b);
+    border-radius:1cqw 1cqw 0 0; background:linear-gradient(90deg, #585451, #1a1918 60%, #0c0b0b); transition:opacity .5s ease;
   }
   .rack-pole.l{ left:2cqw; } .rack-pole.r{ right:2cqw; }
+  /* Each garment: --d is its distance from the active one, --far is 0 for the active garment and 1 for the rest.
+     Resting garments are turned edge-on; the active one faces you, grows a little, and the others part. */
   .rack-item{
-    position:absolute; z-index:calc(2 + var(--i)); display:block;
+    --x:var(--x0); --w:var(--w0);
+    --d:calc(var(--i) - var(--act)); --far:clamp(0, var(--d) * var(--d), 1);
+    position:absolute; z-index:calc(2 + var(--i)); display:block; pointer-events:none;
     left:calc(var(--x) * 1cqw); width:calc(var(--w) * 1cqw); aspect-ratio:var(--ar);
     top:calc(var(--rail) * 1cqw - var(--hook) * var(--w) * 1cqw / var(--ar));   /* hook sits on the rail */
     transform-origin:50% calc(var(--hook) * 100%);
+    translate:calc(var(--on) * clamp(-1, var(--d), 1) * 3.4cqw) 0;
+    scale:calc(1 + (1 - var(--far)) * var(--on) * 0.1);
+    transition:left .8s var(--ease), top .8s var(--ease), width .8s var(--ease), translate .7s var(--ease), scale .7s var(--ease), opacity .5s ease, filter .5s ease;
     animation:rack-hang 3.6s ease-out both; animation-delay:calc(var(--i) * 0.22s);
     -webkit-tap-highlight-color:transparent; outline:none;
   }
-  .rack-item:hover, .rack-item:focus-visible{ animation:rack-hang-b 3.6s ease-out both; animation-delay:0s; }
+  .rack-item.on{ z-index:10; }
+  .rack-item:hover{ animation:rack-hang-b 3.6s ease-out both; animation-delay:0s; }
+  .rack-item:focus-visible{ outline:2px solid #FFD27A; outline-offset:4px; border-radius:6px; }
   .rack-sway{ display:block; width:100%; height:100%; transform-origin:50% calc(var(--hook) * 100%); animation:rack-idle 7s ease-in-out infinite; animation-delay:calc(var(--i) * -2.3s); }
-  .rack-item img{ display:block; width:100%; height:100%; filter:drop-shadow(0 1.2cqw 1.4cqw rgba(0,0,0,0.38)); }
-  .suit-turn.show-back .rack-item img{ transform:scaleX(-1); }
-  .rack-label{
-    position:absolute; left:50%; transform:translateX(-50%); white-space:nowrap; pointer-events:none;
-    top:calc(2.2cqw - var(--rail) * 1cqw + var(--hook) * var(--w) * 1cqw / var(--ar));
-    padding:5px 11px; border-radius:999px; background:rgba(10,16,38,0.58); border:1px solid rgba(255,255,255,0.3);
-    backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
-    color:#fff; font-size:11px; font-weight:700; letter-spacing:0.14em; text-transform:uppercase;
+  .rack-flip{
+    display:block; width:100%; height:100%; pointer-events:auto; transform-origin:50% calc(var(--hook) * 100%);
+    transform:perspective(900px) rotateY(calc(var(--far) * var(--edge))); transition:transform .8s var(--ease);
   }
-  .rack-item:focus-visible .rack-label{ box-shadow:0 0 0 2px #FFD27A; }
-  .suit-shade{ position:absolute; inset:0; z-index:9; background:#2b211b; opacity:0; pointer-events:none; }
+  .rack-item img{ display:block; width:100%; height:100%; filter:drop-shadow(0 1.2cqw 1.4cqw rgba(0,0,0,0.38)); }
+
+  /* Opened: the chosen garment lifts to the middle and the rest of the rack fades back. */
+  .hero-visual[data-view="focus"] .rack-item{ opacity:0; filter:blur(8px); animation:none; }
+  .hero-visual[data-view="focus"] .rack-item.is-focus{
+    --rail:9.5; --x:calc((100 - var(--fw)) / 2); --w:var(--fw); opacity:1; filter:none;
+  }
+  .hero-visual[data-view="focus"] .rack-rail, .hero-visual[data-view="focus"] .rack-pole{ opacity:0; }
+  .hero-chips{ transition:opacity .4s ease; }
+  .hero-visual[data-view="focus"] .hero-chips{ opacity:0; }
+  .rack-ui{ position:absolute; inset:0; z-index:12; pointer-events:none; }
+  .rack-ui > *{ pointer-events:auto; visibility:hidden; opacity:0; transition:opacity .35s ease, visibility 0s .4s; }
+  .hero-visual[data-view="focus"] .rack-ui > *{ visibility:visible; opacity:1; transition:opacity .45s ease .35s, visibility 0s 0s; }
+  .rack-close{
+    position:absolute; top:2.4cqw; right:3cqw; padding:8px 13px; border-radius:999px; color:#fff;
+    background:rgba(10,16,38,0.5); border:1px solid rgba(255,255,255,0.3);
+    font-size:11px; font-weight:700; letter-spacing:0.14em; text-transform:uppercase;
+  }
+  .rack-arrow{
+    position:absolute; bottom:3.4cqw; width:38px; height:38px; border-radius:50%; display:grid; place-items:center;
+    color:#fff; font-size:18px; background:rgba(10,16,38,0.4); border:1px solid rgba(255,255,255,0.55);
+  }
+  .rack-prev{ left:3cqw; } .rack-next{ right:3cqw; }
+  .rack-info{ position:absolute; left:0; right:0; bottom:3.4cqw; display:flex; gap:16px; justify-content:center; align-items:center; }
+  .rack-info .btn{ padding:11px 22px; font-size:13px; border-radius:999px; background:#fff; color:var(--navy); }
+  .rack-link{ color:#fff; font-size:13px; font-weight:600; text-decoration:underline; text-underline-offset:4px; }
+  .rack-ui button{ cursor:pointer; font:inherit; }
+  @media (hover:none){ .hero-visual{ --edge:36deg; } }   /* no hover on touch screens: keep them readable */
   @keyframes rack-hang{
     0%{ transform:rotate(5deg); } 12%{ transform:rotate(-4deg); } 25%{ transform:rotate(3deg); } 38%{ transform:rotate(-2.1deg); }
     51%{ transform:rotate(1.4deg); } 64%{ transform:rotate(-0.8deg); } 77%{ transform:rotate(0.4deg); } 89%{ transform:rotate(-0.15deg); } 100%{ transform:rotate(0); }
@@ -205,7 +238,6 @@
     51%{ transform:rotate(1.4deg); } 64%{ transform:rotate(-0.8deg); } 77%{ transform:rotate(0.4deg); } 89%{ transform:rotate(-0.15deg); } 100%{ transform:rotate(0); }
   }
   @keyframes rack-idle{ 0%,100%{ transform:rotate(-0.6deg); } 50%{ transform:rotate(0.6deg); } }
-  @media (prefers-reduced-motion:reduce){ .rack-item, .rack-sway{ animation:none; } }
 
   /* HERO REFRESH: soft color glow, pill badge, rounded buttons, trust row, glass chips */
   .hero{
@@ -568,6 +600,8 @@
   }
   @media (max-width: 560px){
     .hero-chips{ display:none; }   /* the copy above already says it; keep the rack clear on small screens */
+    .hero-visual[data-view="focus"] .rack-brand{ opacity:0; }   /* Close sits where the name is */
+    .rack-brand{ transition:opacity .3s ease; font-size:10px; letter-spacing:0.22em; }
     .steps{ grid-template-columns:1fr; }
     .section-head h2, .booking-copy h2{ font-size:30px; }
     .hero-actions{ gap:12px; }
@@ -642,25 +676,31 @@
 <main id="main">
 <section class="hero">
   <div class="hero-stage">
-    <div class="hero-visual" role="group" aria-label="A suit, shirts and trousers hanging on one rack">
+    <div class="hero-visual" role="group" aria-label="Epitome Dry Cleaners rack" data-view="rack">
       <div class="rack-wall" aria-hidden="true"></div>
-      <div class="suit-turn">
+      <p class="rack-brand">Epitome Dry Cleaners</p>
+      <div class="rack-scene">
         <span class="rack-pole l" aria-hidden="true"></span>
         <span class="rack-pole r" aria-hidden="true"></span>
         <span class="rack-rail" aria-hidden="true"></span>
-    <a class="rack-item" href="#pricing" aria-label="Suits: see pricing" style="--i:0;--x:3.5;--w:40;--ar:0.7189;--hook:0.0269">
-      <span class="rack-sway"><img src="images/hero-rack-suit.webp" alt="A suit jacket on a wooden hanger" width="560" height="779" fetchpriority="high"></span>
-      <span class="rack-label" aria-hidden="true">Suit</span>
-    </a>
-    <a class="rack-item" href="#pricing" aria-label="Shirts: see pricing" style="--i:1;--x:32;--w:42;--ar:0.7895;--hook:0.0214">
-      <span class="rack-sway"><img src="images/hero-rack-shirts.webp" alt="A row of shirts on wooden hangers" width="600" height="760"></span>
-      <span class="rack-label" aria-hidden="true">Shirts</span>
-    </a>
-    <a class="rack-item" href="#pricing" aria-label="Trousers: see pricing" style="--i:2;--x:71.5;--w:25;--ar:0.5874;--hook:0.0344">
-      <span class="rack-sway"><img src="images/hero-rack-trousers.webp" alt="Grey trousers on a wooden hanger" width="440" height="749"></span>
-      <span class="rack-label" aria-hidden="true">Trousers</span>
-    </a>
-        <div class="suit-shade"></div>
+        <a class="rack-item" href="#pricing" aria-label="Look closer (1 of 3)" style="--i:0;--x0:3.5;--w0:40;--fw:38.8;--ar:0.7189;--hook:0.0269">
+          <span class="rack-sway"><span class="rack-flip"><img src="images/hero-rack-suit.webp" alt="A suit jacket on a wooden hanger" width="560" height="779" fetchpriority="high"></span></span>
+        </a>
+        <a class="rack-item" href="#pricing" aria-label="Look closer (2 of 3)" style="--i:1;--x0:32;--w0:42;--fw:42.6;--ar:0.7895;--hook:0.0214">
+          <span class="rack-sway"><span class="rack-flip"><img src="images/hero-rack-shirts.webp" alt="A row of shirts on wooden hangers" width="600" height="760"></span></span>
+        </a>
+        <a class="rack-item" href="#pricing" aria-label="Look closer (3 of 3)" style="--i:2;--x0:71.5;--w0:25;--fw:31.7;--ar:0.5874;--hook:0.0344">
+          <span class="rack-sway"><span class="rack-flip"><img src="images/hero-rack-trousers.webp" alt="Grey trousers on a wooden hanger" width="440" height="749"></span></span>
+        </a>
+      </div>
+      <div class="rack-ui">
+        <button type="button" class="rack-close" aria-label="Close">Close &times;</button>
+        <button type="button" class="rack-arrow rack-prev" aria-label="Previous">&larr;</button>
+        <button type="button" class="rack-arrow rack-next" aria-label="Next">&rarr;</button>
+        <div class="rack-info">
+          <a href="#book" class="btn">Book a pickup</a>
+          <a href="#pricing" class="rack-link">See pricing</a>
+        </div>
       </div>
       <div class="hero-chips">
         <span class="hero-chip"><b>48h</b> turnaround</span>
@@ -1271,46 +1311,88 @@ if (!reduceMotion) {
   });
 }
 
-// Turn the suit on its hook while the hero is pinned: one full turn (front, back, front)
-// across the pinned stretch. A spring makes it lag and overshoot like real fabric.
+// The rack: garments rest edge-on; hovering (or tapping) one turns it to face you while the others part.
+// Clicking opens it in the middle; the arrows, Esc and the arrow keys step through or close it.
+// When nobody is interacting, the garments turn one after another so the rack looks alive.
 (function() {
-  var hero = document.querySelector('.hero');
-  var stage = document.querySelector('.hero-stage');
-  var turn = document.querySelector('.suit-turn');
-  if (!hero || !stage || !turn || reduceMotion) return;
-  var shade = turn.querySelector('.suit-shade');
-  var angle, velocity = 0, running = false;
+  var visual = document.querySelector('.hero-visual');
+  var scene = visual && visual.querySelector('.rack-scene');
+  if (!scene) return;
+  var items = [].slice.call(scene.querySelectorAll('.rack-item'));
+  var closeBtn = visual.querySelector('.rack-close');
+  var focused = -1, peekTimer = null, resumeTimer = null, peekAt = -1, visible = true;
 
-  function targetAngle() {
-    var range = hero.offsetHeight - stage.offsetHeight;
-    if (range <= 0) return 0;
-    var travelled = parseFloat(getComputedStyle(stage).top) - hero.getBoundingClientRect().top;
-    return Math.min(Math.max(travelled / range, 0), 1) * 360;
+  function setActive(i) {
+    scene.style.setProperty('--act', i);
+    scene.style.setProperty('--on', i < 0 ? 0 : 1);
+    items.forEach(function(it, k) { it.classList.toggle('on', k === i); });
   }
-
-  function draw() {
-    var c = Math.cos(angle * Math.PI / 180);
-    var width = Math.max(Math.abs(c), 0.16);
-    var tilt = Math.max(-6, Math.min(6, velocity * 0.4));
-    turn.style.transform = 'rotate(' + tilt.toFixed(2) + 'deg) scaleX(' + width.toFixed(3) + ')';
-    turn.classList.toggle('show-back', c < 0);
-    shade.style.opacity = ((1 - Math.abs(c)) * 0.55).toFixed(3);
+  function stopPeek() { clearInterval(peekTimer); peekTimer = null; clearTimeout(resumeTimer); }
+  function startPeek(delay) {
+    stopPeek();
+    if (reduceMotion || focused >= 0 || document.hidden || !visible) return;
+    resumeTimer = setTimeout(function() {
+      peekAt = -1;
+      function tick() {
+        peekAt = (peekAt + 1) % (items.length + 1);   // each garment in turn, then a short rest
+        setActive(peekAt === items.length ? -1 : peekAt);
+      }
+      tick();
+      peekTimer = setInterval(tick, 2400);
+    }, delay);
   }
-
-  function step() {
-    var target = targetAngle();
-    velocity = (velocity + (target - angle) * 0.08) * 0.8;
-    angle += velocity;
-    draw();
-    if (Math.abs(target - angle) > 0.05 || Math.abs(velocity) > 0.05) requestAnimationFrame(step);
-    else running = false;
+  function openFocus(i) {
+    stopPeek();
+    focused = i;
+    visual.dataset.view = 'focus';
+    items.forEach(function(it, k) { it.classList.toggle('is-focus', k === i); it.tabIndex = (k === i) ? 0 : -1; });
+    setActive(i);
+    closeBtn.focus({ preventScroll: true });
   }
+  function closeFocus() {
+    if (focused < 0) return;
+    var back = items[focused];
+    focused = -1;
+    visual.dataset.view = 'rack';
+    items.forEach(function(it) { it.classList.remove('is-focus'); it.tabIndex = 0; });
+    setActive(-1);
+    back.focus({ preventScroll: true });
+    startPeek(5000);
+  }
+  function step(n) { if (focused >= 0) openFocus((focused + n + items.length) % items.length); }
 
-  angle = targetAngle();
-  draw();
-  window.addEventListener('scroll', function() {
-    if (!running) { running = true; requestAnimationFrame(step); }
-  }, { passive: true });
+  items.forEach(function(it, i) {
+    it.addEventListener('pointerenter', function() { if (focused < 0) { stopPeek(); setActive(i); } });
+    it.addEventListener('focus', function() { if (focused < 0) { stopPeek(); setActive(i); } });
+    it.addEventListener('blur', function() {
+      if (focused < 0 && !scene.matches(':hover')) { setActive(-1); startPeek(5000); }
+    });
+    it.addEventListener('click', function(e) { e.preventDefault(); openFocus(i); });
+  });
+  scene.addEventListener('pointerleave', function() {
+    if (focused < 0) { setActive(-1); startPeek(5000); }
+  });
+  closeBtn.addEventListener('click', closeFocus);
+  visual.querySelector('.rack-prev').addEventListener('click', function() { step(-1); });
+  visual.querySelector('.rack-next').addEventListener('click', function() { step(1); });
+  visual.addEventListener('click', function(e) {            // a click on the bare wall also closes it
+    if (focused >= 0 && !e.target.closest('.rack-item, .rack-ui')) closeFocus();
+  });
+  document.addEventListener('keydown', function(e) {
+    if (focused < 0) return;
+    if (e.key === 'Escape') closeFocus();
+    if (e.key === 'ArrowLeft') step(-1);
+    if (e.key === 'ArrowRight') step(1);
+  });
+  document.addEventListener('visibilitychange', function() { if (document.hidden) stopPeek(); else startPeek(1500); });
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(function(entries) {
+      visible = entries[0].isIntersecting;
+      if (visible) startPeek(2500); else stopPeek();
+    }, { threshold: 0.3 }).observe(visual);
+  } else {
+    startPeek(3200);
+  }
 })();
 
 // Highlight the steps one after another each time the section comes into view
